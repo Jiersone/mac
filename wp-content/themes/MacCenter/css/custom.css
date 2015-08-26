@@ -7,18 +7,22 @@
 @import url('fonts/MyriadSetPro-Bold-fontfacekit/web-fonts/MyriadSetPro-Bold/stylesheet.css');
 @import url('fonts/MyriadSetPro-Medium-fontfacekit/stylesheet.css');
 
-
+/*AJUSTES JIERSON*/
+/*AJUSTES JIERSON*/
+/*
 #full_slider_1{
 	z-index: 0 !important;
 }
 
 .slideshow_caption {
     z-index: 100;
-    /*CAMBIO*/
+ 
     width: 100% !important;
     top: 6% !important;
-}
+}*/
 
+/*FIN AJUSTES JIERSON*/
+/*FIN AJUSTES JIERSON*/
 /*PRECIO REGULAR EN GRILLA*/
 #top del span.amount {
 	color: #666 !important;
@@ -214,8 +218,8 @@ style="padding: 0px; height: 201px; transition: none 0s ease 0s ; transform: tra
 .slideshow_caption {
     z-index: 100;
     /*CAMBIO*/
-  /*  width: 56% !important;
-    top: 6% !important;*/
+    width: 56% !important;
+    top: 6% !important;
 }
     
 #top .avia-slideshow-button.avia-color-light {
