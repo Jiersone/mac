@@ -8,6 +8,17 @@
 @import url('fonts/MyriadSetPro-Medium-fontfacekit/stylesheet.css');
 
 
+#full_slider_1{
+	z-index: 0 !important;
+}
+
+.slideshow_caption {
+    z-index: 100;
+    /*CAMBIO*/
+    width: 100% !important;
+    top: 6% !important;
+}
+
 /*PRECIO REGULAR EN GRILLA*/
 #top del span.amount {
 	color: #666 !important;
@@ -203,8 +214,8 @@ style="padding: 0px; height: 201px; transition: none 0s ease 0s ; transform: tra
 .slideshow_caption {
     z-index: 100;
     /*CAMBIO*/
-    width: 56% !important;
-    top: 6% !important;
+  /*  width: 56% !important;
+    top: 6% !important;*/
 }
     
 #top .avia-slideshow-button.avia-color-light {
