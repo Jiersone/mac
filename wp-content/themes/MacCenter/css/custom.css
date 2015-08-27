@@ -988,7 +988,7 @@ left:0px;
 position:static !important;
 }
 #socket{
-z-index:0;
+z-index:10000;
 }
 .prod-img{width:100% !important;}
 div ul.product_list_widget{
