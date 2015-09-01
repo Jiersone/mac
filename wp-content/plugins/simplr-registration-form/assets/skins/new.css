@@ -9,7 +9,10 @@
 	display:block;
 	float:left;
 }
-
+.option-field .checkbox label {
+	display:inline-block;
+	float:none;
+}
 .simplr-field input, .option-field input {
 	background: #f7f7f7;
 	width: 60%;
@@ -30,41 +33,28 @@
 	-moz-border-radius: 6px;
 	padding:10px;
 	width:90%;
-	margin:10px 5px; 
+	margin:10px 5px;
 }
 
 .simplr-message {
-	margin:5px 0; 
-	padding:5px 10px; 
-	font-size:12px; 
-	border-radius: 6px; 
-	-webkit-border-radius:6px; 
-	-moz-border-radius:6px; 
+	margin:5px 0;
+	padding:5px 10px;
+	font-size:12px;
+	border-radius: 6px;
+	-webkit-border-radius:6px;
+	-moz-border-radius:6px;
 	opacity:0.7;
 }
 
-.simplr-message.success { 
-	background: rgba(255,255,255,0) !important; 
-	color:#4F8A10; 
-	width: 500px !important;
-margin: auto !important;
-background-image: url("http://mc.arbolnaranja.com/wp-content/uploads/2015/04/alert-01.png") !important;
-height: 50px !important;
-text-align: left !important;
-text-transform: uppercase !important;
-padding: 7px 10px 10px 20px !important;
-
+.simplr-message.success {
+	background: #DFF2BF;
+	color:#4F8A10;
+	border-color: #4F8A10;
 }
 
-.simplr-message.error { 
-	list-style:none !important;
-color: #D8000C !important;
-width: 500px !important;
-margin: auto !important;
-background-image: url("http://mc.arbolnaranja.com/wp-content/uploads/2015/04/alert-01.png") !important;
-height: 50px !important;
-text-align: left !important;
-text-transform: uppercase !important;
-padding: 7px 10px 10px 20px !important;
+.simplr-message.error {
+	background: #FFBABA;
+	color: #D8000C;
+	border-color: #D8000C;
 }
 

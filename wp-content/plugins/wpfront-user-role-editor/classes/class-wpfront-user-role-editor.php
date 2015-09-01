@@ -38,13 +38,27 @@ if (!class_exists('WPFront_User_Role_Editor')) {
     class WPFront_User_Role_Editor extends WPFront_Base_URE {
 
         //Constants
-        const VERSION = '2.9.1';
+        const VERSION = '2.11.3';
         const OPTIONS_GROUP_NAME = 'wpfront-user-role-editor-options-group';
         const OPTION_NAME = 'wpfront-user-role-editor-options';
         const PLUGIN_SLUG = 'wpfront-user-role-editor';
 
         public static $DYNAMIC_CAPS = array();
-        public static $ROLE_CAPS = array('list_roles', 'create_roles', 'edit_roles', 'delete_roles', 'edit_role_menus', 'edit_posts_role_permissions', 'edit_pages_role_permissions', 'edit_nav_menu_permissions', 'edit_content_shortcodes', 'delete_content_shortcodes', 'edit_login_redirects', 'delete_login_redirects');
+        public static $ROLE_CAPS = array(
+            'list_roles',
+            'create_roles',
+            'edit_roles',
+            'delete_roles',
+            'edit_role_menus',
+            'edit_posts_role_permissions',
+            'edit_pages_role_permissions',
+            'edit_nav_menu_permissions',
+            'edit_content_shortcodes',
+            'delete_content_shortcodes',
+            'edit_login_redirects',
+            'delete_login_redirects',
+            'bulk_edit_roles'
+        );
         public static $DEFAULT_ROLES = array(self::ADMINISTRATOR_ROLE_KEY, self::EDITOR_ROLE_KEY, self::AUTHOR_ROLE_KEY, self::CONTRIBUTOR_ROLE_KEY, self::SUBSCRIBER_ROLE_KEY);
         public static $STANDARD_CAPABILITIES = array(
             'Dashboard' => array(
@@ -145,6 +159,7 @@ if (!class_exists('WPFront_User_Role_Editor')) {
         private static $CAPABILITIES = NULL;
         //Variables
         protected $admin_menu = array();
+        protected $remove_admin_menu = array();
         protected $options;
         protected $objList;
         protected $objAddEdit;
@@ -154,6 +169,8 @@ if (!class_exists('WPFront_User_Role_Editor')) {
         protected $objGoPro;
         protected $objNavMenu = NULL;
         protected $objLoginRedirect = NULL;
+        protected $objAttachmentPermissions = NULL;
+        protected $objUserPermissions = NULL;
 
         function __construct() {
             parent::__construct(__FILE__, self::PLUGIN_SLUG);
@@ -173,6 +190,10 @@ if (!class_exists('WPFront_User_Role_Editor')) {
                     $this->objNavMenu = new WPFront_User_Role_Editor_Nav_Menu($this);
                 if ($this->objLoginRedirect === NULL)
                     $this->objLoginRedirect = new WPFront_User_Role_Editor_Login_Redirect($this);
+                if ($this->objAttachmentPermissions === NULL)
+                    $this->objAttachmentPermissions = new WPFront_User_Role_Editor_Attachment_Permissions($this);
+                if ($this->objUserPermissions === NULL)
+                    $this->objUserPermissions = new WPFront_User_Role_Editor_User_Permissions($this);
             }
         }
 
@@ -193,13 +214,21 @@ if (!class_exists('WPFront_User_Role_Editor')) {
             $this->rename_role_capabilities();
         }
 
-        protected function add_submenu_page($position, $title, $name, $capability, $slug, $func, $scripts = NULL, $styles = NULL, $controller = NULL) {
+        protected function add_submenu_page($position, $title, $name, $capability, $slug, $func, $scripts = NULL, $styles = NULL, $controller = NULL, $admin_bar_parent = NULL, $admin_bar_title = NULL) {
             if ($scripts === NULL)
                 $scripts = 'enqueue_role_scripts';
             if ($styles === NULL)
                 $styles = 'enqueue_role_styles';
 
-            $this->admin_menu[$position] = array($title, $name, $capability, $slug, $func, $scripts, $styles, $controller);
+            $this->admin_menu[$position] = array($title, $name, $capability, $slug, $func, $scripts, $styles, $controller, $admin_bar_parent, $admin_bar_title);
+        }
+
+        protected function remove_submenu_page($position) {
+            $this->remove_admin_menu[$position] = TRUE;
+        }
+
+        public function get_submenu_page_item($position) {
+            return $this->admin_menu[$position];
         }
 
         protected function add_pro_page() {
@@ -222,7 +251,7 @@ if (!class_exists('WPFront_User_Role_Editor')) {
 
             if ($this->objGoPro->has_license()) {
                 $this->add_submenu_page(10, $this->__('Roles'), $this->__('All Roles'), $this->get_capability_string('list'), WPFront_User_Role_Editor_List::MENU_SLUG, array($this->objList, 'list_roles'), NULL, NULL, $this->objList);
-                $this->add_submenu_page(20, $this->__('Add New Role'), $this->__('Add New'), $this->get_capability_string('create'), WPFront_User_Role_Editor_Add_Edit::MENU_SLUG, array($this->objAddEdit, 'add_edit_role'), NULL, NULL, $this->objAddEdit);
+                $this->add_submenu_page(20, $this->__('Add New Role'), $this->__('Add New'), $this->get_capability_string('create'), WPFront_User_Role_Editor_Add_Edit::MENU_SLUG, array($this->objAddEdit, 'add_edit_role'), NULL, NULL, $this->objAddEdit, 'new-content', $this->__('Role'));
                 $this->add_submenu_page(30, $this->__('Restore Role'), $this->__('Restore'), $this->get_capability_string('edit'), WPFront_User_Role_Editor_Restore::MENU_SLUG, array($this->objRestore, 'restore_role'), NULL, NULL, $this->objRestore);
                 $this->add_submenu_page(35, $this->__('Add/Remove Capability'), $this->__('Add/Remove Cap'), $this->get_capability_string('edit'), WPFront_User_Role_Editor_Add_Remove_Capability::MENU_SLUG, array($this->objAddRemoveCap, 'add_remove_capability'), NULL, NULL, $this->objAddRemoveCap);
                 $this->add_submenu_page(37, $this->__('Login Redirect'), $this->__('Login Redirect'), 'edit_login_redirects', WPFront_User_Role_Editor_Login_Redirect::MENU_SLUG, array($this->objLoginRedirect, 'login_redirect'), NULL, NULL, $this->objLoginRedirect);
@@ -238,6 +267,10 @@ if (!class_exists('WPFront_User_Role_Editor')) {
             }
 
             foreach ($this->admin_menu as $key => $value) {
+                if (!empty($this->remove_admin_menu[$key])) {
+                    continue;
+                }
+
                 $page_hook_suffix = add_submenu_page($menu_slug, $value[0], $value[1], $value[2], $value[3], $value[4]);
                 add_action('admin_print_scripts-' . $page_hook_suffix, array($this, $value[5]));
                 add_action('admin_print_styles-' . $page_hook_suffix, array($this, $value[6]));
@@ -250,6 +283,24 @@ if (!class_exists('WPFront_User_Role_Editor')) {
                 $this->objAssignUsers->set_page_hook($page_hook_suffix);
                 add_action('admin_print_scripts-' . $page_hook_suffix, array($this, 'enqueue_role_scripts'));
                 add_action('admin_print_styles-' . $page_hook_suffix, array($this, 'enqueue_role_styles'));
+            }
+        }
+
+        public function admin_bar() {
+            global $wp_admin_bar;
+
+            foreach ($this->admin_menu as $key => $value) {
+                if (!empty($value[8])) {
+                    if (current_user_can($value[2])) {
+                        $wp_admin_bar->add_menu(array(
+                            'parent' => $value[8],
+                            'id' => $value[3],
+                            'title' => $value[9],
+                            'href' => admin_url('admin.php?page=' . $value[3]),
+                                )
+                        );
+                    }
+                }
             }
         }
 
@@ -280,6 +331,11 @@ if (!class_exists('WPFront_User_Role_Editor')) {
 
             $styleRoot = $this->pluginURLRoot . 'css/';
             wp_enqueue_style('wpfront-user-role-editor-options', $styleRoot . 'options.css', array(), self::VERSION);
+        }
+        
+        public function admin_enqueue_styles() {
+            $styleRoot = $this->pluginURLRoot . 'css/';
+            wp_enqueue_style('wpfront-user-role-editor-admin-css', $styleRoot . 'admin-style.css', array(), self::VERSION);
         }
 
         public function get_capability_string($capability) {
@@ -432,6 +488,8 @@ if (!class_exists('WPFront_User_Role_Editor')) {
                             if (isset($caps->$key)) {
                                 $custom_caps[] = $caps->$key;
                                 unset($caps->$key);
+                            } elseif (isset($post_type_object->cap->$key)) {
+                                $custom_caps[] = $post_type_object->cap->$key;
                             }
                         }
                         foreach ($caps as $key => $value) {
@@ -538,6 +596,22 @@ if (!class_exists('WPFront_User_Role_Editor')) {
             return FALSE;
         }
 
+        public function get_assignable_roles($roles = NULL) {
+            if ($roles === NULL) {
+                global $wp_roles;
+                $roles = $wp_roles->roles;
+            }
+
+            $roles = $this->objUserPermissions->assignable_roles($roles);
+            $all_roles = array();
+
+            foreach ($roles as $key => $value) {
+                $all_roles[$key] = get_role($key);
+            }
+
+            return $all_roles;
+        }
+
         private function rename_role_capabilities() {
             global $wp_roles;
 
@@ -591,6 +665,25 @@ if (!class_exists('WPFront_User_Role_Editor')) {
             new WPFront_User_Role_Editor();
         }
 
+        public static function wp_remote_get($url, $params = NULL) {
+            if ($params === NULL) {
+                $params = array('timeout' => 10);
+            } else {
+                $params = array_merge(array('timeout' => 10), $params);
+            }
+
+            $params['sslverify'] = FALSE;
+
+            $result = wp_remote_get($url, $params);
+
+            if (is_wp_error($result) || wp_remote_retrieve_response_code($result) !== 200) {
+                $params['sslverify'] = TRUE;
+                $result = wp_remote_get($url, $params);
+            }
+
+            return $result;
+        }
+
     }
 
 }
@@ -606,6 +699,8 @@ require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-assign-
 require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-go-pro.php");
 require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-nav-menu.php");
 require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-login-redirect.php");
+require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-attachment-permissions.php");
+require_once(plugin_dir_path(__FILE__) . "class-wpfront-user-role-editor-user-permissions.php");
 require_once(plugin_dir_path(__FILE__) . "integration/plugins/class-wpfront-user-role-editor-plugin-integration.php");
 
 

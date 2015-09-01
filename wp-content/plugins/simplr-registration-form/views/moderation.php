@@ -10,21 +10,24 @@ $defaults = (object) array(
 	'mod_roles'                 => array('administrator'),
 );
 $simplr_reg = get_option('simplr_reg_options');
+
+if (!is_object($simplr_reg)) $simplr_reg = new stdClass;
 //setup defaults
 foreach($defaults as $k => $v ) {
-	$simplr_reg->$k = $simplr_reg->$k ? $simplr_reg->$k : $defaults->$k;
+	$simplr_reg->$k = isset($simplr_reg->$k) ? $simplr_reg->$k : $defaults->$k;
 }
+
 if(isset($data['mod-submit'])) {
 	if(!wp_verify_nonce(-1, $data['reg-mod']) && !current_user_can('manage_options')){ wp_die('Death to hackers!');}
 	foreach($data as $k => $v) {
 		$simplr_reg->$k = $v ? $v : $defaults->$k;
 	}
 	update_option('simplr_reg_options', $simplr_reg);
-	echo '<div id="message" class="updated alert message"><p>'.__("Settings saved",'simplr-reg').'</p></div>';
+	echo '<div id="message" class="updated notice is-dismissible alert message"><p>'.__("Settings saved",'simplr-reg').'</p></div>';
 }
 ?>
 <form id="add-field" action="" method="post">
-<h3><?php _e('Moderation','simplr-reg'); ?>"</h3>
+<h3><?php _e('Moderation','simplr-reg'); ?></h3>
 <p><?php _e('These settings allow you to enable and control moderation','simplr-reg'); ?><p>
 <?php SREG_Form::select(array(
 	'name'		=> 'mod_on',

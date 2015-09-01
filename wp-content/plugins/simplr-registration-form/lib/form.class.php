@@ -66,8 +66,9 @@ class SREG_Form {
 		<select name="<?php echo $option['name']; ?>" class="<?php echo $class; ?>">
 			<option value=""><?php echo __('Select') . ' ' . @$option['options']['post_type']; ?>... </option>
 			<?php $posts = get_posts(array('post_type'=>$option['post_type'],'orderby'=>'post_title','order'=>'ASC','showposts'=>-1)); ?>
-			<?php foreach($posts as $post): ?>
-				<?php if(!empty($vals)) { ?><?php $sel = ($post->ID == $vals) ? 'selected' : ''; ?><?php } ?>
+			<?php foreach($posts as $post):
+				$sel = '';
+				if(!empty($vals)) { $sel = ($post->ID == $vals) ? 'selected' : ''; } ?>
 				<option value="<?php echo $post->ID; ?>" <?php echo $sel; ?>><?php echo $post->post_title; ?></option>
 			<?php endforeach; ?>
 		</select>
@@ -80,10 +81,10 @@ class SREG_Form {
 	static function checkbox($option, $vals, $class) {
 		?>
 		<div class="option-field checkbox <?php echo apply_filters($option['name'].'_error_class',''); ?>">
-		<?php $sel = ('on' == $vals)?'checked':''; ?>
-		<label for="<?php echo $option['name']; ?>"><?php echo $option['label'] . show_required($option); ?></label>
+			<?php $sel = ('on' == $vals)?'checked':''; ?>
 			<input type="checkbox" name="<?php echo $option['name']; ?>" id="<?php echo $option['name']; ?>" value="on" class="<?php echo @$class; ?>" <?php echo $sel; ?>/>
-		<?php if(isset($option['comment'])) { echo '<div class="form-comment">'.$option['comment'].'</div>'; } ?>
+			<label for="<?php echo $option['name']; ?>"><?php echo $option['label'] . show_required($option); ?></label>
+			<?php if(isset($option['comment'])) { echo '<div class="form-comment">'.$option['comment'].'</div>'; } ?>
 		</div>
 		<div class="simplr-clr"></div>
 		<?php
@@ -161,17 +162,21 @@ class SREG_Form {
 		$list = $vals;
 		if(!empty($list)) {
 			$list = explode('-',$list);
-			$lmo = $list[1];
-			$ldy = $list[2];
-			$lyr = $list[0];
+			if ( isset($list[1]) ) { $lmo = $list[1]; } else { $lmo = ''; };
+			if ( isset($list[2]) ) { $ldy = $list[2]; } else { $ldy = ''; };
+			if ( isset($list[0]) ) { $lyr = $list[0]; } else { $lyr = ''; };
+
 		}
 		$years = $options_array;
-		?>
+		if ( !is_array($years) || empty($years) || empty($years[0]) ) {
+			$years = array( (date('Y') - 50), date('Y') );
+		} ?>
 		<div class="option-field date <?php echo apply_filters($option['name'].'_error_class',''); ?>">
 		<label for="<?php echo $option['name']; ?>"><?php echo $option['label'] . show_required($option); ?></label>
 		<div class="simplr-clr"></div>
 		<select name="<?php echo $option['name']. '-mo'; ?>" id="<?php echo $option['name']. '-mo'; ?>" class="<?php echo @$class; ?>">
 		<option value=""><?php _e('Select Month...','simplr-reg'); ?></option>
+		<?php if ( !isset($lmo) ) { $lmo = ''; } ?>
 		<option value="01" <?php if($lmo == '01') {echo 'selected'; } ?>><?php _e('Jan','simplr-reg'); ?></option>
 		<option value="02" <?php if($lmo == '02') {echo 'selected'; } ?>><?php _e('Feb','simplr-reg'); ?></option>
 		<option value="03" <?php if($lmo == '03') {echo 'selected'; } ?>><?php _e('Mar','simplr-reg'); ?></option>
@@ -187,23 +192,27 @@ class SREG_Form {
 		</select>
 		<select name="<?php echo $option['name'] . '-dy'; ?>" id="<?php echo $option['name']. '-dy'; ?>" class="<?php echo @$class; ?>">
 		<option value=""><?php _e('Select Day...','simplr-reg'); ?></option>
-		<?php $i = 1; while($i <= 31) {
-		if($i == "$ldy") { $selected = 'selected'; } else { $selected = '';}
-		if($i < 10) {
-			$y = sprintf('%02d',$i);
-			echo '<option value="' .$y .'" ' .$selected .'>'.$y.'</option>';
-		} else {
-			echo '<option value="'.$i .'" ' .$selected .'>' .$i .'</option>';
-		}
-		$i++;
-		}
-		?>
+		<?php $i = 1;
+		if ( !isset($ldy) ) { $ldy = ''; }
+		while($i <= 31) {
+			if($i == "$ldy") { $selected = 'selected'; } else { $selected = '';}
+			if($i < 10) {
+				$y = sprintf('%02d',$i);
+				echo '<option value="' .$y .'" ' .$selected .'>'.$y.'</option>';
+			} else {
+				echo '<option value="'.$i .'" ' .$selected .'>' .$i .'</option>';
+			}
+			$i++;
+		} ?>
 		</select>
 		<select name="<?php echo $option['name'] . '-yr'; ?>" id="<?php echo $option['name']. '-yr'; ?>" class="<?php echo @$class; ?>">
 		<option value=""><?php _e('Select Year...','simplr-reg'); ?></option>
-		<?php $i = $years[0]; while($i >= $years[0] && $i <= $years[1]) {
-		if($i == "$lyr") { $selected = 'selected'; } else { $selected = '';}
-		echo '<option value="'.$i .'" ' .$selected .'>' .$i .'</option>'; $i++;} ?>
+		<?php $i = $years[0];
+		if ( !isset($lyr) ) { $lyr = ''; }
+		while($i >= $years[0] && $i <= $years[1]) {
+			if($i == "$lyr") { $selected = 'selected'; } else { $selected = '';}
+			echo '<option value="'.$i .'" ' .$selected .'>' .$i .'</option>'; $i++;
+		} ?>
 		</select>
 		</div>
 		<div class="simplr-clr"></div>

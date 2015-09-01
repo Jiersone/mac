@@ -3,8 +3,8 @@ Contributors: mpvanwinkle77, mpol
 Donate link: http://www.mikevanwinkle.com/
 Tags: registration, signup, profile, cms, users, user management, user profile
 Requires at least: 3.0
-Tested up to: 4.1
-Stable tag: 2.2.8
+Tested up to: 4.2.2
+Stable tag: 2.3.6
 
 This plugin allows users to easily add a custom user registration form anywhere on their site using simple shortcode.
 
@@ -26,6 +26,15 @@ The plugin also creates an interface for adding/removing fields to be used in th
 
 See plugin settings page for detailed instructions.
 
+= When I click the Add Registration Form button, nothing happens. =
+
+It is likely that you have Javascript errors in your website.
+You can open the inspector of your browser, and check your messages in the console tab.
+
+= I added a Date field, but I don't see any years. =
+
+When you edit the field, you can give options along for the years, like '2000,2015'.
+
 = License =
 
 This plugin is licensed under the GPL.
@@ -43,6 +52,46 @@ For the banners we credit:
 3. The modal where you can customize the shortcode that will be entered.
 
 == Changelog ==
+
+= 2.3.6 =
+* 2015-06-06
+* With checkbox, have label after the input, and adjust its CSS.
+
+= 2.3.5 =
+* properly escape add_query_arg inputs
+
+= 2.3.4 =
+* 2015-04-18
+* Really use the Email From address for emails.
+
+= 2.3.3 =
+* 2015-04-17
+* Don't include registration.php on current WordPress.
+* And even more fixes...
+
+= 2.3.2 =
+* 2015-04-17
+* Have defaults for years in date dropdown.
+* Fix even more notices (thanks dvdm).
+
+= 2.3.1 =
+* 2015-04-17
+* Fix more notices (thanks dvdm).
+
+= 2.3.0 =
+* 2015-04-07
+* Make notices (messages) dismissable in WP 4.2.
+* Fix PHP warnings and notices.
+
+= 2.2.9 =
+* 2015-03-27
+* Fix bug when no activeEditor, add to textarea#content instead.
+* Load js after html in simplr_reg_options.
+* Fix typo in MCE button.
+* Use different onclick listener, close.on() seems to break in IE11.
+* Use correct name attributes, Firefox prefers that.
+* Check capability in simplr_reg_options.
+* Add button doesn't need a href value.
 
 = 2.2.8 =
 * Add settings link to main plugin page.

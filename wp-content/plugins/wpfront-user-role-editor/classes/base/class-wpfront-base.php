@@ -68,10 +68,13 @@ if (!class_exists('WPFront_Base_URE')) {
                 add_action('admin_init', array(&$this, 'admin_init'));
                 add_action('admin_menu', array(&$this, 'admin_menu'));
                 add_filter('plugin_action_links', array(&$this, 'action_links'), 10, 2);
+                add_action('admin_enqueue_scripts', array(&$this, 'admin_enqueue_styles'));
+                add_action('admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts'));
             } else {
                 add_action('wp_enqueue_scripts', array(&$this, 'enqueue_styles'));
                 add_action('wp_enqueue_scripts', array(&$this, 'enqueue_scripts'));
             }
+            add_action('wp_before_admin_bar_render', array($this, 'admin_bar'));
         }
 
         protected function plugin_dir_suffix() {
@@ -110,6 +113,10 @@ if (!class_exists('WPFront_Base_URE')) {
             WPFront_Base_Menu::admin_menu(self::$menu_data);
         }
 
+        public function admin_bar() {
+            
+        }
+
         public static function submenu_compare($a, $b) {
             return strcmp($a[0], $b[0]);
         }
@@ -131,6 +138,14 @@ if (!class_exists('WPFront_Base_URE')) {
         }
 
         public function enqueue_scripts() {
+            
+        }
+        
+        public function admin_enqueue_styles() {
+            
+        }
+
+        public function admin_enqueue_scripts() {
             
         }
 

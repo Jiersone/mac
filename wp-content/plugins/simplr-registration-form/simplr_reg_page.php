@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Simplr User Registration Form Plus
-Version: 2.2.8
+Version: 2.3.6
 Description: This a simple plugin for adding a custom user registration form to any post or page using shortcode.
 Author: Mike Van Winkle
 Author URI: http://www.mikevanwinkle.com
@@ -68,7 +68,7 @@ if( @$simplr_options->mod_on == 'yes' ) {
 **/
 
 function simplr_reg_install() {
-		//validate
+	//validate
 	global $wp_version;
 	$exit_msg = "Dude, upgrade your stinkin Wordpress Installation.";
 
@@ -144,7 +144,7 @@ function simplr_fields_settings_process($input) {
 
 function simplr_reg_styles() {
 	$options = get_option('simplr_reg_options');
-	if($options->styles != 'yes') {
+	if( is_object($options) && isset($options->styles) && $options->styles != 'yes') {
 		if( @$options->style_skin ) {
 			$src = SIMPLR_URL .'/assets/skins/'.$options->style_skin;
 		} else {
@@ -152,10 +152,13 @@ function simplr_reg_styles() {
 		}
 		wp_register_style('simplr-forms-style',$src);
 		wp_enqueue_style('simplr-forms-style');
-	} elseif(!empty($options->stylesheet)) {
+	} elseif(is_object($options) || !empty($options->stylesheet)) {
 		$src = $options->stylesheet;
 		wp_register_style('simplr-forms-custom-style',$src);
 		wp_enqueue_style('simplr-forms-custom-style');
+	} else {
+		wp_register_style('simplr-forms-style', SIMPLR_URL .'/assets/skins/default.css');
+		wp_enqueue_style('simplr-forms-style');
 	}
 }
 
@@ -257,11 +260,11 @@ function simplr_reg_scripts() {
 add_action('media_buttons', 'simplr_media_button', 100);
 function simplr_media_button() {
 	wp_enqueue_script('simplr-reg', plugins_url('assets/simplr_reg.js',__FILE__), array('jquery'));
-?>
-  <a id="insert-registration-form" class="button" title="<?php esc_html_e( 'Add Registration Form', 'simplr-reg' ); ?>" data-editor="content" href="<?php echo SIMPLR_URL.'/simplr_reg_options.php?null=1'; ?>">
-    <span class="jetpack-contact-form-icon"></span> <?php esc_html_e( 'Add Registration Form', 'simplr-reg' ); ?>
-  </a>
-<?php
+	?>
+	<a id="insert-registration-form" class="button" title="<?php esc_html_e( 'Add Registration Form', 'simplr-reg' ); ?>" data-editor="content" href="#">
+		<span class="jetpack-contact-form-icon"></span> <?php esc_html_e( 'Add Registration Form', 'simplr-reg' ); ?>
+	</a>
+	<?php
 }
 
 
@@ -349,7 +352,7 @@ function simplr_fb_auto_login() {
 		if(isset($user) && (@$_REQUEST['loggedout'] == 'true' OR @$_REQUEST['action'] == 'logout')) {
 			wp_redirect($facebook->getLogoutUrl(array('next'=>get_bloginfo('url'))));
 		} elseif(isset($user) AND !is_wp_error($auth) ) {
-	    wp_set_current_user($auth->ID, $auth->user_login);
+			wp_set_current_user($auth->ID, $auth->user_login);
 			wp_set_auth_cookie($auth->ID);
 			if(isset($simplr_options->thank_you) AND !is_page($simplr_options->thank_you)  ) {
 				update_user_meta($auth->ID,'first_visit',date('Y-m-d'));
@@ -482,26 +485,26 @@ function simplr_fb_login_footer_scripts() {
 		<div id="fb-root"></div>
 		<script>
 		window.fbAsyncInit = function() {
-		  FB.init({
-		    appId  : '<?php echo $ap_info['appId']; ?>',
-		    status : true, // check login status
-		    cookie : <?php echo $ap_info['cookie']; ?>, // enable cookies to allow the server to access the session
-		    xfbml  : true,  // parse XFBML
-		    oauth : true //enables OAuth 2.0
-		  });
+			FB.init({
+				appId  : '<?php echo $ap_info['appId']; ?>',
+				status : true, // check login status
+				cookie : <?php echo $ap_info['cookie']; ?>, // enable cookies to allow the server to access the session
+				xfbml  : true,  // parse XFBML
+				oauth : true //enables OAuth 2.0
+			});
 
 			FB.Event.subscribe('auth.login', function(response) {
-	        window.location.reload();
-	    });
-	    FB.Event.subscribe('auth.logout', function(response) {
-	        window.location.reload();
-	    });
+				window.location.reload();
+			});
+			FB.Event.subscribe('auth.logout', function(response) {
+				window.location.reload();
+			});
 		};
 		(function() {
-		  var e = document.createElement('script');
-		  e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
-		  e.async = true;
-		  document.getElementById('fb-root').appendChild(e);
+			var e = document.createElement('script');
+			e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+			e.async = true;
+			document.getElementById('fb-root').appendChild(e);
 		}());
 		</script>
 	<?php
@@ -618,7 +621,9 @@ function simplr_register_redirect() {
 
 function simplr_profile_redirect() {
 	global $simplr_options,$wpdb;
-	$profile = $wpdb->get_var($wpdb->prepare("SELECT post_name FROM {$wpdb->prefix}posts WHERE ID = %d",$simplr_options->profile_redirect));
+	if ( is_object($simplr_options) &&  isset($simplr_options->profile_redirect) ) {
+		$profile = $wpdb->get_var($wpdb->prepare("SELECT post_name FROM {$wpdb->prefix}posts WHERE ID = %d",$simplr_options->profile_redirect));
+	}
 	$file = parse_url($_SERVER['REQUEST_URI']);
 	$path = explode('/',@$file['path']);
 	if(isset($profile) AND end($path) == $profile) {
@@ -642,6 +647,9 @@ function simplr_save_sort() {
 	if(isset($sort) and $page = 'simple_reg_set') {
 		update_option('simplr_field_sort',$sort);
 	}
+	// debugging code as the response.
+	echo "php sort: ";
+	print_r($sort);
 	die;
 }
 
@@ -664,7 +672,7 @@ function simplr_print_message() {
 			}
 		} else {
 		?>
-				<div id="message" class="<?php echo $messages->class; ?>"><p><?php echo $messages->content; ?></p></div>
+			<div id="message" class="<?php echo $messages->class; ?>"><p><?php echo $messages->content; ?></p></div>
 		<?php
 		}
 	}
@@ -706,23 +714,23 @@ function simplr_admin_actions() {
 		if(isset($data['recaptcha-submit'])) {
 
 			if(!wp_verify_nonce(-1, $data['reg-api']) && !current_user_can('manage_options')){ wp_die('Death to hackers!');}
-				$simplr_reg->recap_public = $data['recap_public'];
-				$simplr_reg->recap_private = $data['recap_private'];
-				$simplr_reg->recap_on = $data['recap_on'];
-				update_option('simplr_reg_options',$simplr_reg);
+			$simplr_reg->recap_public = $data['recap_public'];
+			$simplr_reg->recap_private = $data['recap_private'];
+			$simplr_reg->recap_on = $data['recap_on'];
+			update_option('simplr_reg_options',$simplr_reg);
 		} elseif(isset($data['fb-submit'])) {
 			if(!wp_verify_nonce(-1, @$data['reg-fb']) && !current_user_can('manage_options')){ wp_die('Death to hackers!');}
-				$simplr_reg->fb_connect_on = $data['fb_connect_on'];
-				$simplr_reg->fb_app_id = @$data['fb_app_id'];
-				$simplr_reg->fb_app_key = @$data['fb_app_key'];
-				$simplr_reg->fb_app_secret = @$data['fb_app_secret'];
-				$simplr_reg->fb_login_allow = @$data['fb_login_allow'];
-				$simplr_reg->fb_login_redirect = @$data['fb_login_redirect'];
-				$simplr_reg->fb_request_perms = @$data['fb_request_perms'];
-				$simplr_reg->fb_auto_register = @$data['fb_auto_register'];
-				update_option('simplr_reg_options',$simplr_reg);
-				simplr_set_message('updated', __("Your settings were saved.", 'simplr-reg') );
-				wp_redirect($_SERVER['REQUEST_URI']);
+			$simplr_reg->fb_connect_on = $data['fb_connect_on'];
+			$simplr_reg->fb_app_id = @$data['fb_app_id'];
+			$simplr_reg->fb_app_key = @$data['fb_app_key'];
+			$simplr_reg->fb_app_secret = @$data['fb_app_secret'];
+			$simplr_reg->fb_login_allow = @$data['fb_login_allow'];
+			$simplr_reg->fb_login_redirect = @$data['fb_login_redirect'];
+			$simplr_reg->fb_request_perms = @$data['fb_request_perms'];
+			$simplr_reg->fb_auto_register = @$data['fb_auto_register'];
+			update_option('simplr_reg_options',$simplr_reg);
+			simplr_set_message('updated notice is-dismissible', __("Your settings were saved.", 'simplr-reg') );
+			wp_redirect($_SERVER['REQUEST_URI']);
 		}
 
 		if(isset($data['main-submit'])) {
@@ -738,7 +746,7 @@ function simplr_admin_actions() {
 			$simplr_reg->thank_you = $data['thank_you'];
 			$simplr_reg->profile_redirect = $data['profile_redirect'];
 			update_option('simplr_reg_options',$simplr_reg);
-			simplr_set_message('updated', __("Your settings were saved.", 'simplr-reg') );
+			simplr_set_message('updated notice is-dismissible', __("Your settings were saved.", 'simplr-reg') );
 			wp_redirect($_SERVER['REQUEST_URI']);
 
 		}
@@ -749,7 +757,7 @@ function simplr_admin_actions() {
 			if( !check_admin_referer('delete','_wpnonce') ) { wp_die('Death to hackers'); }
 			$del = new SREG_Fields();
 			$del->delete_field($_GET['key']);
-			simplr_set_message('updated', __("Field deleted.", 'simplr-reg') );
+			simplr_set_message('updated notice is-dismissible', __("Field deleted.", 'simplr-reg') );
 			wp_redirect(remove_query_arg('action'));
 
 		} elseif(isset($_POST['mass-submit'])) {
@@ -759,7 +767,7 @@ function simplr_admin_actions() {
 				$del = new SREG_Fields();
 				$del->delete_field($key);
 			endforeach;
-			simplr_set_message('updated', __("Fields were deleted.", 'simplr-reg') );
+			simplr_set_message('updated notice is-dismissible', __("Fields were deleted.", 'simplr-reg') );
 			wp_redirect(remove_query_arg('action'));
 
 		}
@@ -769,7 +777,7 @@ function simplr_admin_actions() {
 			$new = new SREG_Fields();
 			$key = $_POST['key'];
 			$response = $new->save_custom($_POST);
-			simplr_set_message('updated', __("Your Field was saved.", 'simplr-reg') );
+			simplr_set_message('updated notice is-dismissible', __("Your Field was saved.", 'simplr-reg') );
 			wp_redirect(remove_query_arg('action'));
 
 		}
@@ -804,8 +812,13 @@ function simplr_activate_users( $ids = false ) {
 			do_action('simplr_activated_user', $data);
 			$subj = simplr_token_replace( $simplr_options->mod_email_activated_subj, $data );
 			$content = simplr_token_replace( $simplr_options->mod_email_activated, $data );
-			$headers = "From: ".$data['blogname']."<".get_option('admin_email').">\r\n";
-			wp_mail( $data['user_email'], $subj, $content);
+			if ( isset( $simplr_options->default_email ) ) {
+				$from = $simplr_options->default_email;
+			} else {
+				$from = get_option('admin_email');
+			}
+			$headers = "From: " . $data['blogname'] . " <$from>\r\n";
+			wp_mail( $data['user_email'], $subj, $content, $headers);
 			return $return;
 		}
 	}
@@ -844,7 +857,7 @@ function simplr_activation_listen() {
 
 
 function simplr_set_notice( $class, $message ) {
-	add_action( "admin_notices" , create_function('',"echo '<div class=\"updated $class\"><p>$message</p></div>';") );
+	add_action( "admin_notices" , create_function('',"echo '<div class=\"updated notice is-dismissible $class\"><p>$message</p></div>';") );
 }
 
 /**
