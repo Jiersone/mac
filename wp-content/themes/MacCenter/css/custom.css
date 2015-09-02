@@ -9,17 +9,122 @@
 
 /*AJUSTES JIERSON*/
 /*AJUSTES JIERSON*/
-/*
-#full_slider_1{
-	z-index: 0 !important;
+.tabla1 {
+  position:relative;
+  border-collapse: collapse;
+  border:transparent;
+  width:100%;
+  max-width:1300px;
+  table-layout: fixed;
+}
+.tabla1 tr{
+  border:transparent;
+}
+.tabla1 td{
+  border:transparent;
+  overflow: hidden;
+}
+#fila1{
+    padding-left:40px;
+  padding-right:40px;
+  width: 60%;
+  box-sizing:border-box;
+}
+#subcaja1, #subcaja1 div, #subcaja1 div img{
+  width:100%;
+  box-sizing:border-box;
+}
+#subcaja1 div img{
+  padding-left: 10%;
+  padding-right: 2%;
+}
+.span1{
+  float: left;
+}
+.span2{
+  padding-left:30%;
+}
+.span3{
+  float: right;
 }
 
-.slideshow_caption {
-    z-index: 100;
- 
-    width: 100% !important;
-    top: 6% !important;
-}*/
+#fila2{
+  width: 40%;
+   margin: 0 auto;
+  box-sizing:border-box;
+}
+#subcaja2{
+  width:100%;
+}
+#subcaja2 .input1{
+  position:absolute;
+  left:42%;
+  bottom:20px;
+  width:40%;
+}
+#subcaja2 .enlace1{
+  position:absolute;
+  bottom:17px;
+  right:1%;
+  width:60%;
+}
+.product-name img{
+    vertical-align: middle;
+}
+.custom_table.shop_table.cart{
+  position:relative;
+ border-collapse: collapse;
+  width:100%;
+  table-layout: fixed; 
+}
+.product-remove{width:5%;box-sizing:border-box;}
+.product-name{width:40%;box-sizing:border-box;}
+.product-price{width:15%;box-sizing:border-box;}
+.product-quantity{width:20%;box-sizing:border-box;}
+div.cart_totals > h2{
+  display:none;
+}
+div .cart-collaterals .cart_totals table{
+  border-collapse: separate;
+  border:1px solid #EAEAEA !important;
+  border:hidden;
+  padding: 0px;
+  margin: 10px 0px 0px 0px;
+}
+div table.shop_table td{
+  padding: 0px 12px;
+}
+div.cart_totals table{
+  position:relative;
+  width:100%;
+  table-layout: fixed;
+  background: transparent;
+}
+div.cart_totals table th{
+  border: hidden;
+  text-align: right;
+  color:#000;
+}
+div.cart_totals table td{
+  border: 1px solid #EAEAEA;
+  text-align: center;
+}
+.cart-collaterals .cart_totals tr td, .cart-collaterals .cart_totals tr th{
+  padding:8px 10px;
+}
+.custom_table .clsActions td{
+  border: hidden;
+  padding-top: 30px;
+}
+div a.remove {
+    margin: auto;
+    height: 18px;
+    width: 18px;
+    text-indent: -9999px;
+    border-radius: 100px;
+    border-style: solid;
+    border-width: 1px;
+}
 
 /*FIN AJUSTES JIERSON*/
 /*FIN AJUSTES JIERSON*/
